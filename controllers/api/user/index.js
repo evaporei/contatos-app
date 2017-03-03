@@ -45,11 +45,6 @@ module.exports = function (app) {
             .catch(error => response.send(error))
     })
 
-    // get a user
-    app.get(basePath, (request, response) => {
-
-    })
-
     // update a user
     app.put(basePath, (request, response) => {
 

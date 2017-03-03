@@ -2,7 +2,6 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const config = require("./config")
-const models = require("./models")
 const controllers = require("./controllers")
 
 const app = express()

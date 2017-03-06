@@ -70,7 +70,34 @@ module.exports = function (app) {
 
     // delete a user
     app.delete(basePath, (request, response) => {
+        
+        const user = {
+            username: request.body.username,
+            password: request.body.password
+        }
 
+        User.find({
+            username: user.username
+        }).then(userArray => {
+            if (userArray.length > 0)
+                return response.status(404).send("No user found with sent username")
+            bcrypt.compare(user.password, userArray[0].password_hash, (error, result) => {
+                if (error)
+                    response.send(error)
+                else
+                    if (result)
+                        User.findOneAndRemove({
+                            username: user.username
+                        }, (error) => {
+                            if (error)
+                                response.send(error)
+                            else
+                                response.send("User deleted")
+                        })
+                    else
+                        response.status(400).send("Wrong password")
+            })
+        }).catch(error => response.send(error))
     })
 
     

@@ -35,10 +35,10 @@ module.exports = function (app) {
                 else {
                     bcrypt.genSalt(10, (error, resultSalt) => {
                         if (error)
-                            return response.send(error)
+                            return response.status(500).send(error)
                         bcrypt.hash(user.password, resultSalt, null, (error, hash) => {
                             if (error)
-                                return response.send(error)
+                                return response.status(500).send(error)
                             const object = {
                                 email: user.email,
                                 username: user.username,
@@ -55,12 +55,12 @@ module.exports = function (app) {
                                     response.send(data)
                                     */
                                 })
-                                .catch(error => response.send(error))
+                                .catch(error => response.status(500).send(error))
                         })
                     })
                 }
             })
-            .catch(error => response.send(error))
+            .catch(error => response.status(500).send(error))
     })
 
     // update a user
@@ -83,21 +83,21 @@ module.exports = function (app) {
                 return response.status(404).send("No user found with sent username")
             bcrypt.compare(user.password, userArray[0].password_hash, (error, result) => {
                 if (error)
-                    response.send(error)
+                    response.status(500).send(error)
                 else
                     if (result)
                         User.findOneAndRemove({
                             username: user.username
                         }, (error) => {
                             if (error)
-                                response.send(error)
+                                response.status(500).send(error)
                             else
                                 response.send("User deleted")
                         })
                     else
                         response.status(400).send("Wrong password")
             })
-        }).catch(error => response.send(error))
+        }).catch(error => response.status(500).send(error))
     })
 
     

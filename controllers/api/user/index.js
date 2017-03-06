@@ -9,21 +9,39 @@ module.exports = function (app) {
     // create a user(sign up)
     app.post(basePath, (request, response) => {
 
+        // Validate fields
+        const user = {
+            email: request.body.email.trim(),
+            username: request.body.username.trim(),
+            password: request.body.password
+        }
+
+        if (!(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(user.email)))
+            return response.status(400).send("E-mail is not valid")
+        
+        if (!(user.username.length >= 6))
+            return response.status(400).send("Username must have at least 6 characters")        
+        
+        if (!(user.password.length >= 6))
+            return response.status(400).send("Password must have at least 6 characters")
+
+
+        // Find if it already exists(email or username), then creates or not
         User.find({
-            $or: [{ email: request.body.email }, { username: request.body.username }]
+            $or: [{ email: user.email }, { username: user.username }]
         }).then(users => {
                 if (users.length > 0)
-                    return response.status(400).send()
+                    return response.status(400).send("Email or username already exists")
                 else {
                     bcrypt.genSalt(10, (error, resultSalt) => {
                         if (error)
                             return response.send(error)
-                        bcrypt.hash(request.body.password, resultSalt, null, (error, hash) => {
+                        bcrypt.hash(user.password, resultSalt, null, (error, hash) => {
                             if (error)
                                 return response.send(error)
                             const object = {
-                                email: request.body.email,
-                                username: request.body.username,
+                                email: user.email,
+                                username: user.username,
                                 password_hash: hash,
                                 salt: resultSalt
                             }

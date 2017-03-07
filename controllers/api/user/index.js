@@ -30,32 +30,32 @@ module.exports = function (app) {
         User.find({
             $or: [{ email: user.email }, { username: user.username }]
         }).then(users => {
-                if (users.length > 0)
-                    return response.status(400).send("Email or username already exists")
-                else {
-                    bcrypt.genSalt(10, (error, resultSalt) => {
+            if (users.length > 0)
+                return response.status(400).send("Email or username already exists")
+            else {
+                bcrypt.genSalt(10, (error, resultSalt) => {
+                    if (error)
+                        return response.status(500).send(error)
+                    bcrypt.hash(user.password, resultSalt, null, (error, hash) => {
                         if (error)
                             return response.status(500).send(error)
-                        bcrypt.hash(user.password, resultSalt, null, (error, hash) => {
-                            if (error)
-                                return response.status(500).send(error)
-                            const object = {
-                                email: user.email,
-                                username: user.username,
-                                password_hash: hash,
-                                salt: resultSalt
-                            }
-                            const newUser = User(object)
-                            newUser.save()
-                                .then(data => {
-                                    response.send("User created")
-                                    /*
-                                    delete data.password_hash
-                                    delete data.salt
-                                    response.send(data)
-                                    */
-                                })
-                                .catch(error => response.status(500).send(error))
+                        const object = {
+                            email: user.email,
+                            username: user.username,
+                            password_hash: hash,
+                            salt: resultSalt
+                        }
+                        const newUser = User(object)
+                        newUser.save()
+                            .then(data => {
+                                response.send("User created")
+                                /*
+                                delete data.password_hash
+                                delete data.salt
+                                response.send(data)
+                                */
+                            })
+                            .catch(error => response.status(500).send(error))
                         })
                     })
                 }
@@ -65,7 +65,7 @@ module.exports = function (app) {
 
     // update a user
     app.put(basePath, (request, response) => {
-
+        
     })
 
     // delete a user
@@ -79,7 +79,7 @@ module.exports = function (app) {
         User.find({
             username: user.username
         }).then(userArray => {
-            if (userArray.length > 0)
+            if (!(userArray.length > 0))
                 return response.status(404).send("No user found with sent username")
             bcrypt.compare(user.password, userArray[0].password_hash, (error, result) => {
                 if (error)

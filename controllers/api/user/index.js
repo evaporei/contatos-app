@@ -63,9 +63,41 @@ module.exports = function (app) {
             .catch(error => response.status(500).send(error))
     })
 
-    // update a user
+    // update a user (email or username)
     app.put(basePath, (request, response) => {
-        
+        const user = {
+            email: request.body.email,
+            username: request.body.username,
+            password: request.body.password
+        }
+        User.find({
+            $or: [{ email: user.email }, { username: user.username }]
+        }).then(userArray => {
+            if (!(userArray.length > 0))
+                return response.status(404).send("No user found with sent username")
+            bcrypt.compare(user.password, userArray[0].password_hash, (error, result) => {
+                if (error)
+                    response.status(500).send(error)
+                else
+                    if (result) {
+                        // adapting the user to be like the one in the database
+                        delete user.password
+                        user.password_hash = userArray[0].password_hash
+                        user.salt = userArray[0].salt
+                        user.contacts = userArray[0].contacts
+
+                        User.findOneAndUpdate({
+                            $or: [{ email: user.email }, { username: user.username }]
+                        }, user, error => {
+                            if (error)
+                                response.status(500).send(error)
+                            else
+                                response.send("User updated")
+                        })
+                    } else
+                        response.status(400).send("Wrong password")
+            })
+        })
     })
 
     // delete a user
